@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Задачи{% endblock %}</title>
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --card: #fff;
+      --text: #1c1917;
+      --muted: #57534e;
+      --accent: #7c2d12;
+      --accent-soft: #ea580c;
+      --border: #e7e5e4;
+      --ok: #166534;
+      --err: #991b1b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    a { color: var(--accent-soft); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 1.25rem; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { font-weight: 700; font-size: 1.15rem; color: var(--text); }
+    .brand:hover { text-decoration: none; color: var(--accent); }
+    nav { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .btn {
+      display: inline-block;
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover { background: #fafaf9; text-decoration: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: #9a3412; color: #fff; }
+    .btn-danger { border-color: #fecaca; color: var(--err); background: #fef2f2; }
+    .btn-sm { padding: 0.25rem 0.55rem; font-size: 0.82rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .messages { list-style: none; padding: 0; margin: 0 0 1rem; }
+    .messages li {
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      margin-bottom: 0.35rem;
+    }
+    .messages .success { background: #dcfce7; color: var(--ok); }
+    .messages .error { background: #fee2e2; color: var(--err); }
+    .messages .info { background: #e0f2fe; color: #075985; }
+    label { display: block; font-weight: 600; margin: 0.5rem 0 0.25rem; font-size: 0.9rem; }
+    input[type="text"], input[type="email"], input[type="password"], textarea, select {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font: inherit;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    .errorlist { color: var(--err); font-size: 0.85rem; list-style: none; padding: 0; margin: 0.25rem 0 0; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.75rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 0.55rem 0.45rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-done { background: #dcfce7; color: var(--ok); }
+    .badge-pend { background: #ffedd5; color: #9a3412; }
+    h1 { font-size: 1.35rem; margin: 0 0 1rem; }
+    .pagination { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="{% url 'tasks:list' %}">Управление задачами</a>
+      <nav>
+        {% if user.is_authenticated %}
+          <span class="muted">{{ user.name }} ({{ user.get_role_display }})</span>
+          <a class="btn" href="{% url 'tasks:list' %}">Задачи</a>
+          <a class="btn btn-primary" href="{% url 'tasks:create' %}">Новая задача</a>
+          {% if user.is_admin %}
+            <a class="btn" href="{% url 'tasks:user_manage' %}">Пользователи</a>
+          {% endif %}
+          <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn">Выход</button>
+          </form>
+        {% else %}
+          <a class="btn" href="{% url 'accounts:login' %}">Вход</a>
+          <a class="btn btn-primary" href="{% url 'accounts:register' %}">Регистрация</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<h1>Пользователи</h1>
+<p class="muted">Назначение и снятие роли администратора. Изменять свою роль нельзя.</p>
+
+<div class="card">
+  {% if users %}
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Имя</th>
+        <th>Роль</th>
+        <th>Регистрация</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.email }}</td>
+        <td>{{ u.name }}</td>
+        <td>
+          {% if u.role == 'admin' %}
+            <span class="badge badge-done">Администратор</span>
+          {% else %}
+            <span class="badge badge-pend">Пользователь</span>
+          {% endif %}
+        </td>
+        <td class="muted">{{ u.created_at|date:"d.m.Y" }}</td>
+        <td>
+          {% if u.pk != user.pk %}
+          <form action="{% url 'tasks:toggle_admin' u.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            {% if u.is_admin %}
+              <button type="submit" class="btn btn-sm">Снять админа</button>
+            {% else %}
+              <button type="submit" class="btn btn-sm btn-primary">Сделать админом</button>
+            {% endif %}
+          </form>
+          {% else %}
+            <span class="muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <div class="pagination muted">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}">← Назад</a>
+    {% endif %}
+    <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Вперёд →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <p class="muted">Пользователей нет.</p>
+  {% endif %}
+</div>
+{% endblock %}

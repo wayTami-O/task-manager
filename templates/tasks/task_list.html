@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Мои задачи{% endblock %}
+{% block content %}
+<h1>{% if user.is_admin %}Все задачи{% else %}Мои задачи{% endif %}</h1>
+
+<div class="card">
+  <form method="get" action="">
+    <div class="row" style="margin-top:0;">
+      <div>
+        <label for="q">Поиск</label>
+        <input type="text" name="q" id="q" value="{{ search_q }}" placeholder="Название или описание">
+      </div>
+      <div>
+        <label for="status">Статус</label>
+        <select name="status" id="status">
+          <option value="">Все</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="align-self:flex-end;">
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+        <a class="btn" href="{% url 'tasks:list' %}">Сброс</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  {% if tasks %}
+  <table>
+    <thead>
+      <tr>
+        <th>Название</th>
+        {% if user.is_admin %}<th>Автор</th>{% endif %}
+        <th>Статус</th>
+        <th>Создана</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr>
+        <td>
+          <strong>{{ task.title }}</strong>
+          {% if task.description %}
+            <div class="muted" style="margin-top:0.2rem;">{{ task.description|truncatechars:120 }}</div>
+          {% endif %}
+        </td>
+        {% if user.is_admin %}
+        <td class="muted">{{ task.user.email }}</td>
+        {% endif %}
+        <td>
+          {% if task.status == 'done' %}
+            <span class="badge badge-done">Выполнена</span>
+          {% else %}
+            <span class="badge badge-pend">Не выполнена</span>
+          {% endif %}
+        </td>
+        <td class="muted">{{ task.created_at|date:"d.m.Y H:i" }}</td>
+        <td style="white-space:nowrap;">
+          <a class="btn btn-sm" href="{% url 'tasks:edit' task.pk %}">Изменить</a>
+          <form action="{% url 'tasks:toggle_done' task.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm">
+              {% if task.status == 'done' %}Вернуть{% else %}Выполнить{% endif %}
+            </button>
+          </form>
+          {% if user.is_admin %}
+          <a class="btn btn-sm btn-danger" href="{% url 'tasks:delete' task.pk %}">Удалить</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if is_paginated %}
+  <div class="pagination muted">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}&q={{ search_q|urlencode }}&status={{ filter_status|urlencode }}">← Назад</a>
+    {% endif %}
+    <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}&q={{ search_q|urlencode }}&status={{ filter_status|urlencode }}">Вперёд →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% else %}
+  <p class="muted">Задач пока нет.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<h1>Вход</h1>
+<div class="card">
+  <form method="post" action="">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+    <label for="id_username">Email</label>
+    {{ form.username.errors }}
+    {{ form.username }}
+
+    <label for="id_password">Пароль</label>
+    {{ form.password.errors }}
+    {{ form.password }}
+
+    <div class="row">
+      <button type="submit" class="btn btn-primary">Войти</button>
+      <a class="muted" href="{% url 'accounts:register' %}">Нет аккаунта? Регистрация</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

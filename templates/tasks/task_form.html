@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Редактирование{% else %}Новая задача{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if object %}Редактировать задачу{% else %}Новая задача{% endif %}</h1>
+<div class="card">
+  {% if object and user.is_admin %}
+    <p class="muted">Автор: {{ object.user.email }} ({{ object.user.name }})</p>
+  {% endif %}
+  <form method="post" action="">
+    {% csrf_token %}
+    {% for field in form %}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field.errors }}
+      {{ field }}
+    {% endfor %}
+    <div class="row">
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <a class="btn" href="{% url 'tasks:list' %}">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
